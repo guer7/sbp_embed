@@ -42,13 +42,12 @@ class SBP_2D(NamedTuple):
 def get_1D_sbp(m,lims,order):
     xl,xr = lims
     xvec,h = np.linspace(xl,xr,m,retstep=True)
-    match order:
-    	case 2:
-    		H,HI,D1,D2,e_l,e_r,d1_l,d1_r = ops.sbp_cent_2nd(m,h)
-    	case 4:
-    		H,HI,D1,D2,e_l,e_r,d1_l,d1_r = ops.sbp_cent_4th(m,h)
-    	case 6:
-    		H,HI,D1,D2,e_l,e_r,d1_l,d1_r = ops.sbp_cent_6th(m,h)
+    if order == 2:
+        H,HI,D1,D2,e_l,e_r,d1_l,d1_r = ops.sbp_cent_2nd(m,h)
+    elif order == 4:
+        H,HI,D1,D2,e_l,e_r,d1_l,d1_r = ops.sbp_cent_4th(m,h)
+    elif order == 6:
+        H,HI,D1,D2,e_l,e_r,d1_l,d1_r = ops.sbp_cent_6th(m,h)
             
     H = spsp.csc_array(H)
     HI = spsp.csc_array(HI)
