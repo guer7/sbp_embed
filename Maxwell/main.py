@@ -15,6 +15,9 @@ from utils import get_1D_sbp, merge_blocks, build_2D_SBP, build_SBP_curv, get_ph
 # Output:
 # div_end - norm of error at final time
 def run_maxwell(m,order,animate=False): 
+    # m = 41
+    # order = 4
+    # animate = False
     # Final time
     T = 1
         
@@ -33,9 +36,6 @@ def run_maxwell(m,order,animate=False):
     c = 4
     def H_exact(x,y,t):
         return np.cos(b*x - t*np.sqrt(b**2 + c**2) + c*y)
-    
-    def Ht_exact(x,y,t):
-        return np.sin(b*x - t*np.sqrt(b**2 + c**2) + c*y)*np.sqrt(b**2 + c**2)
     
     def Ex_exact(x,y,t):
         return -1/np.sqrt(b**2 + c**2)*c*np.cos(b*x - t*np.sqrt(b**2 + c**2) + c*y)
@@ -73,9 +73,6 @@ def run_maxwell(m,order,animate=False):
     def g(t):
         return H_exact(x_bound,y_bound,t)
     
-    def gt(t):
-        return Ht_exact(x_bound,y_bound,t)
-    
     H = spsp.kron(I3,SBP.H)
     HI = spsp.kron(I3,SBP.HI)
     Lplus = HI@L.T@spsplg.inv(spsp.csc_array((L@HI@L.T)))
@@ -86,7 +83,7 @@ def run_maxwell(m,order,animate=False):
     D = P@Dtilde@P
     S = P*Dtilde*Lplus
     def rhs(v,t):
-        return D@v + S@g(t) + Lplus@gt(t)
+        return D@v + S@g(t)
     
     # Time stepping
     dt_try = 0.1*SBP_left.h
@@ -98,7 +95,7 @@ def run_maxwell(m,order,animate=False):
     Ex0 = Ex_exact(x,y,0)
     Ey0 = Ey_exact(x,y,0)
     
-    v = np.concatenate((Ex0,H0,Ey0),axis=0)
+    w = P@np.concatenate((Ex0,H0,Ey0),axis=0)
     D_DIV = spsp.hstack((SBP.Dx,SBP.Dy),format='csc')
     div = np.zeros(mt)
     E0 = np.concatenate((Ex0,Ey0),axis=0)
@@ -120,20 +117,25 @@ def run_maxwell(m,order,animate=False):
         Y = np.reshape(y,SBP.m).T
         title = plt.title("t = " + str(0))
         srf0 = ax[0].plot_surface(X,Y,Ex0.reshape(SBP.m).T,cmap=cm.coolwarm)
-        ax[0].view_init(elev=90, azim=-90, roll=0)
         srf1 = ax[1].plot_surface(X,Y,H0.reshape(SBP.m).T,cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
         srf2 = ax[2].plot_surface(X,Y,Ey0.reshape(SBP.m).T,cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
+        
+        ax[0].view_init(elev=90, azim=-90, roll=0)
+        ax[1].view_init(elev=90, azim=-90, roll=0)
+        ax[2].view_init(elev=90, azim=-90, roll=0)
         plt.draw()
     
     t = 0
     for tidx in range(mt-1):
         # RK4
-        k1 = dt*rhs(v,t)
-        k2 = dt*rhs(v + 0.5*k1,t + 0.5*dt)
-        k3 = dt*rhs(v + 0.5*k2,t + 0.5*dt)
-        k4 = dt*rhs(v + k3,t + dt)
-        v = v + 1/6*(k1 + 2*k2 + 2*k3 + k4)
+        k1 = dt*rhs(w,t)
+        k2 = dt*rhs(w + 0.5*k1,t + 0.5*dt)
+        k3 = dt*rhs(w + 0.5*k2,t + 0.5*dt)
+        k4 = dt*rhs(w + k3,t + dt)
+        w = w + 1/6*(k1 + 2*k2 + 2*k3 + k4)
         t = t + dt
+        
+        v = w + Lplus@g(t)
         
         Ex = v[0:SBP.N]
         Hz = v[SBP.N:2*SBP.N]
