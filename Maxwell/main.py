@@ -4,7 +4,7 @@ import scipy.sparse.linalg as spsplg
 import scipy.sparse as spsp
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from utils import get_1D_sbp, merge_blocks, build_2D_SBP
+from utils import get_1D_sbp, merge_blocks, build_2D_SBP, build_SBP_curv, get_physical_coords
 
 # Simulates Maxwell's equations in 2D with 4 blocks.
 # Input:
@@ -13,88 +13,97 @@ from utils import get_1D_sbp, merge_blocks, build_2D_SBP
 #   animate - if plotting simulation and divergence over time (boolean)
 # 
 # Output:
-# div_end - norm of divergence at final time
-def run_maxwell(m,order,animate=False):
-    
+# div_end - norm of error at final time
+def run_maxwell(m,order,animate=False): 
     # Final time
-    T = 1 
+    T = 1
         
     # Block boundaries
-    xl = -1
-    xi = 0
-    xr = 1
-    yl = -1
-    yi = 0
-    yr = 1
-
+    xlims = [-1,0,1]
+    ylims = [-1,0,1]
+    
     print("Running Maxwell simulation with m = %d and order = %d." % (m,order))
     
     # PDE coefficients
     A = np.array([[0,0,0],[0,0,-1],[0,-1,0]])
     B = np.array([[0,1,0],[1,0,0],[0,0,0]])
     
-    eps1 = 1.0
-    eps2 = 1.0
-    def eps(x,y):
-        return eps1 + (eps2 - eps1)*np.logical_and(y >= yi,x >= xi)
+    # Analytical solutions
+    b = 3
+    c = 4
+    def H_exact(x,y,t):
+        return np.cos(b*x - t*np.sqrt(b**2 + c**2) + c*y)
     
-    mu1 = 1.0
-    mu2 = 1.0
-    def mu(x,y):
-        return mu1 + (mu2 - mu1)*np.logical_and(y >= yi,x >= xi)
+    def Ht_exact(x,y,t):
+        return np.sin(b*x - t*np.sqrt(b**2 + c**2) + c*y)*np.sqrt(b**2 + c**2)
+    
+    def Ex_exact(x,y,t):
+        return -1/np.sqrt(b**2 + c**2)*c*np.cos(b*x - t*np.sqrt(b**2 + c**2) + c*y)
+    
+    def Ey_exact(x,y,t):
+        return 1/np.sqrt(b**2 + c**2)*b*np.cos(b*x - t*np.sqrt(b**2 + c**2) + c*y)
     
     # 1D SBP operators in each block
-    SBP_left = get_1D_sbp(m,[xl,xi],order)
-    SBP_right = get_1D_sbp(m,[xi,xr],order)
-    SBP_bot = get_1D_sbp(m,[yl,yi],order)
-    SBP_top = get_1D_sbp(m,[yi,yr],order)
+    SBP_left = get_1D_sbp(m,xlims[:2],order)
+    SBP_right = get_1D_sbp(m,xlims[1:],order)
+    SBP_bot = get_1D_sbp(m,ylims[:2],order)
+    SBP_top = get_1D_sbp(m,xlims[1:],order)
     
     # 1D merged operators using the embedding method
     SBPx = merge_blocks(SBP_left,SBP_right);
     SBPy = merge_blocks(SBP_bot,SBP_top);
     
-    # 2D SBP operators
-    SBP = build_2D_SBP(SBPx,SBPy)
-    mx = SBP.SBPx.m
-    my = SBP.SBPy.m
+    # 2D SBP operators on reference grid
+    SBP_ref = build_2D_SBP(SBPx,SBPy)
     
-    [X,Y] = np.meshgrid(SBP.xvec,SBP.yvec)
-    x = X.T.reshape(SBP.N)
-    y = Y.T.reshape(SBP.N)
-
+    # 2D SBP operators on physical grid
+    x,y = get_physical_coords(SBP_ref.m,xlims[0:3:2],ylims[0:3:2])
+    SBP = build_SBP_curv(SBP_ref,[x,y])
+    
     I3 = np.eye(3)
-    e0 = I3[0,:]
-    e2 = I3[2,:]
+    e1 = np.array([0,1,0])
     
     # Projection method for the boundary conditions
-    Lw = spsp.kron(e2,SBP.e_w)
-    Le = spsp.kron(e2,SBP.e_e)
-    Ls = spsp.kron(e0,SBP.e_s)
-    Ln = spsp.kron(e0,SBP.e_n)
-    L = spsp.vstack((Lw,Le,Ls,Ln),format='csc')
-    CI = spsp.diags(np.concatenate((1./eps(x,y),1./mu(x,y),1./eps(x,y)),axis=0),format='csc')
-    HI = spsp.kron(I3,SBP.HI)@CI
-    P = spsp.eye(3*SBP.N) - HI@L.T@spsplg.inv(L@HI@L.T)@L
+    # Remove corner points of e_w and e_e to avoid linear dependence
+    e_bound = spsp.vstack((SBP.e_w[1:-1,:],SBP.e_e[1:-1,:],SBP.e_s,SBP.e_n),format='csc')
+    L = spsp.kron(e1,e_bound)
     
-    # RHS operator
-    D = P@CI@(spsp.kron(A,SBP.Dx) + spsp.kron(B,SBP.Dy))@P
+    x_bound = e_bound@x
+    y_bound = e_bound@y
+    def g(t):
+        return H_exact(x_bound,y_bound,t)
+    
+    def gt(t):
+        return Ht_exact(x_bound,y_bound,t)
+    
+    H = spsp.kron(I3,SBP.H)
+    HI = spsp.kron(I3,SBP.HI)
+    Lplus = HI@L.T@spsplg.inv(spsp.csc_array((L@HI@L.T)))
+    P = spsp.eye(3*SBP.N) - Lplus@L
+    
+    # RHS function
+    Dtilde = spsp.kron(A,SBP.Dx) + spsp.kron(B,SBP.Dy)
+    D = P@Dtilde@P
+    S = P*Dtilde*Lplus
+    def rhs(v,t):
+        return D@v + S@g(t) + Lplus@gt(t)
     
     # Time stepping
-    dt_try = 0.1*min(SBP.SBPx.h,SBP.SBPy.h)
+    dt_try = 0.1*SBP_left.h
     mt = int(np.ceil(T/dt_try) + 1)
     tvec,dt = np.linspace(0,T,mt,retstep=True)
     
     # Initial data
-    rstar = 0.1
-    x0 = 0
-    y0 = 0
-    H0 = np.exp(-(x - x0)**2/rstar**2 - (y - y0)**2/rstar**2)
-    Ex0 = 0*H0
-    Ey0 = 0*H0
+    H0 = H_exact(x,y,0)
+    Ex0 = Ex_exact(x,y,0)
+    Ey0 = Ey_exact(x,y,0)
     
     v = np.concatenate((Ex0,H0,Ey0),axis=0)
     D_DIV = spsp.hstack((SBP.Dx,SBP.Dy),format='csc')
     div = np.zeros(mt)
+    E0 = np.concatenate((Ex0,Ey0),axis=0)
+    div_curr = D_DIV@E0
+    div[0] = np.sqrt(div_curr.T@SBP.H@div_curr)
     if animate:
         fig, ax = plt.subplots(nrows=1,ncols=3, subplot_kw={"projection": "3d"}, figsize=(20,6))
         ax[0].set_zlim(-1,1)
@@ -107,19 +116,22 @@ def run_maxwell(m,order,animate=False):
         plt.xlabel("x")
         plt.ylabel("y")
         
+        X = np.reshape(x,SBP.m).T
+        Y = np.reshape(y,SBP.m).T
         title = plt.title("t = " + str(0))
-        srf0 = ax[0].plot_surface(X,Y,Ex0.reshape((my,mx)),cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
-        srf1 = ax[1].plot_surface(X,Y,H0.reshape((my,mx)),cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
-        srf2 = ax[2].plot_surface(X,Y,Ey0.reshape((my,mx)),cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
+        srf0 = ax[0].plot_surface(X,Y,Ex0.reshape(SBP.m).T,cmap=cm.coolwarm)
+        ax[0].view_init(elev=90, azim=-90, roll=0)
+        srf1 = ax[1].plot_surface(X,Y,H0.reshape(SBP.m).T,cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
+        srf2 = ax[2].plot_surface(X,Y,Ey0.reshape(SBP.m).T,cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
         plt.draw()
     
     t = 0
-    for tidx in range(mt):
+    for tidx in range(mt-1):
         # RK4
-        k1 = dt*D@(v)
-        k2 = dt*D@(v + 0.5*k1)
-        k3 = dt*D@(v + 0.5*k2)
-        k4 = dt*D@(v + k3)
+        k1 = dt*rhs(v,t)
+        k2 = dt*rhs(v + 0.5*k1,t + 0.5*dt)
+        k3 = dt*rhs(v + 0.5*k2,t + 0.5*dt)
+        k4 = dt*rhs(v + k3,t + dt)
         v = v + 1/6*(k1 + 2*k2 + 2*k3 + k4)
         t = t + dt
         
@@ -129,15 +141,15 @@ def run_maxwell(m,order,animate=False):
         
         E = np.concatenate((Ex,Ey),axis=0)
         div_curr = D_DIV@E
-        div[tidx] = np.sqrt(div_curr.T@SBP.H@div_curr)
+        div[tidx+1] = np.sqrt(div_curr.T@SBP.H@div_curr)
         
-        if animate and (tidx % 5 == 0 or tidx == mt-1):
+        if animate and (tidx % 5 == 0 or tidx == mt-2):
             srf0.remove()
             srf1.remove()
             srf2.remove()
-            srf0 = ax[0].plot_surface(X,Y,Ex.reshape((my,mx)),cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
-            srf1 = ax[1].plot_surface(X,Y,Hz.reshape((my,mx)),cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
-            srf2 = ax[2].plot_surface(X,Y,Ey.reshape((my,mx)),cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
+            srf0 = ax[0].plot_surface(X,Y,Ex.reshape(SBP.m),cmap=cm.coolwarm)
+            srf1 = ax[1].plot_surface(X,Y,Hz.reshape(SBP.m),cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
+            srf2 = ax[2].plot_surface(X,Y,Ey.reshape(SBP.m),cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
             title.set_text("t = {:.2f}".format(t))
             plt.draw()
             plt.pause(1e-2)
@@ -149,12 +161,17 @@ def run_maxwell(m,order,animate=False):
         plt.figure()
         plt.semilogy(tvec,div)
         plt.show()
-        
-    return div[-1]
+    
+    
+    v_exact = np.concatenate((Ex_exact(x,y,T),H_exact(x,y,T),Ey_exact(x,y,T)),axis=0)
+    
+    err_diff = v - v_exact
+    err = np.sqrt(err_diff.T@H@err_diff)
+    return err
 
 
 if __name__ == "__main__":
-    mvec = np.array([21,51,101,201])
+    mvec = np.array([21,61,101])
     order_vec = np.array([2,4,6])
     errvec = np.zeros((mvec.size,order_vec.size))
     for order_idx,order in enumerate(order_vec):
