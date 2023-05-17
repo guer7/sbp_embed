@@ -13,7 +13,7 @@ from utils import get_1D_sbp, merge_blocks, build_2D_SBP, build_SBP_curv, get_ph
 #   animate - if plotting simulation and divergence over time (boolean)
 # 
 # Output:
-# div_end - norm of error at final time
+# err - norm of error at final time
 def run_maxwell(m,order,animate=False): 
     # m = 41
     # order = 4
@@ -175,7 +175,7 @@ def run_maxwell(m,order,animate=False):
 
 
 if __name__ == "__main__":
-    mvec = np.array([21,61,101])
+    mvec = np.array([21,61,101,141,181,221,261,301])
     order_vec = np.array([2,4,6])
     errvec = np.zeros((mvec.size,order_vec.size))
     for order_idx,order in enumerate(order_vec):
