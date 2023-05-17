@@ -104,25 +104,25 @@ def run_maxwell(m,order,animate=False):
     if animate:
         fig, ax = plt.subplots(nrows=1,ncols=3, subplot_kw={"projection": "3d"}, figsize=(20,6))
         ax[0].set_zlim(-1,1)
-        plt.xlabel("x")
-        plt.ylabel("y")
+        ax[0].set_xlabel("x")
+        ax[0].set_ylabel("y")
+        ax[0].title.set_text("Ex, t = " + str(0))
         ax[1].set_zlim(-1,1)
-        plt.xlabel("x")
-        plt.ylabel("y")
+        ax[1].set_xlabel("x")
+        ax[1].set_ylabel("y")
+        ax[1].title.set_text("H")
         ax[2].set_zlim(-1,1)
-        plt.xlabel("x")
-        plt.ylabel("y")
+        ax[2].set_xlabel("x")
+        ax[2].set_ylabel("y")
+        ax[2].title.set_text("Ey")
         
         X = np.reshape(x,SBP.m).T
         Y = np.reshape(y,SBP.m).T
-        title = plt.title("t = " + str(0))
+        
         srf0 = ax[0].plot_surface(X,Y,Ex0.reshape(SBP.m).T,cmap=cm.coolwarm)
         srf1 = ax[1].plot_surface(X,Y,H0.reshape(SBP.m).T,cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
         srf2 = ax[2].plot_surface(X,Y,Ey0.reshape(SBP.m).T,cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
         
-        ax[0].view_init(elev=90, azim=-90, roll=0)
-        ax[1].view_init(elev=90, azim=-90, roll=0)
-        ax[2].view_init(elev=90, azim=-90, roll=0)
         plt.draw()
     
     t = 0
@@ -152,7 +152,7 @@ def run_maxwell(m,order,animate=False):
             srf0 = ax[0].plot_surface(X,Y,Ex.reshape(SBP.m),cmap=cm.coolwarm)
             srf1 = ax[1].plot_surface(X,Y,Hz.reshape(SBP.m),cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
             srf2 = ax[2].plot_surface(X,Y,Ey.reshape(SBP.m),cmap=cm.coolwarm,vmin=-0.4,vmax=0.4)
-            title.set_text("t = {:.2f}".format(t))
+            ax[0].title.set_text("Ex, t = {:.2f}".format(t))
             plt.draw()
             plt.pause(1e-2)
             
@@ -161,6 +161,8 @@ def run_maxwell(m,order,animate=False):
     
     if animate:        
         plt.figure()
+        plt.xlabel("t")
+        plt.ylabel("Divergence")
         plt.semilogy(tvec,div)
         plt.show()
     
