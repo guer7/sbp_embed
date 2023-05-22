@@ -14,10 +14,7 @@ from utils import get_1D_sbp, merge_blocks, build_2D_SBP, build_SBP_curv, get_ph
 # 
 # Output:
 # err - norm of error at final time
-def run_maxwell(m,order,animate=False): 
-    # m = 41
-    # order = 4
-    # animate = False
+def run_maxwell(m,order,animate=False,plot_eigenvalues=False):
     # Final time
     T = 1
         
@@ -85,6 +82,17 @@ def run_maxwell(m,order,animate=False):
     def rhs(v,t):
         return D@v + S@g(t)
     
+    if plot_eigenvalues:
+        print("Computing eigenvalues...")
+        eigD = np.linalg.eig(D.toarray())[0]
+        plt.figure()
+        plt.scatter(np.real(eigD),np.imag(eigD))
+        plt.xlabel("Real part")
+        plt.ylabel("Imaginary part")
+        plt.title("Eigenvalues of D")
+        print("Close figure to proceed.")
+        plt.show()
+        
     # Time stepping
     dt_try = 0.1*SBP_left.h
     mt = int(np.ceil(T/dt_try) + 1)
@@ -175,7 +183,7 @@ def run_maxwell(m,order,animate=False):
 
 
 if __name__ == "__main__":
-    mvec = np.array([21,61,101,141,181,221,261,301])
+    mvec = np.array([21,61,101])
     order_vec = np.array([2,4,6])
     errvec = np.zeros((mvec.size,order_vec.size))
     for order_idx,order in enumerate(order_vec):
