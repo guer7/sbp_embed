@@ -71,14 +71,12 @@ def run_maxwell(m,order,animate=False,plot_eigenvalues=False):
         return H_exact(x_bound,y_bound,t)
     
     H = spsp.kron(I3,SBP.H)
-    HI = spsp.kron(I3,SBP.HI)
-    Lplus = HI@L.T@spsplg.inv(spsp.csc_array((L@HI@L.T)))
-    P = spsp.eye(3*SBP.N) - Lplus@L
+    P = spsp.eye(3*SBP.N) - L.T@L
     
     # RHS function
     Dtilde = spsp.kron(A,SBP.Dx) + spsp.kron(B,SBP.Dy)
     D = P@Dtilde@P
-    S = P*Dtilde*Lplus
+    S = P*Dtilde*L.T
     def rhs(v,t):
         return D@v + S@g(t)
     
@@ -143,7 +141,7 @@ def run_maxwell(m,order,animate=False,plot_eigenvalues=False):
         w = w + 1/6*(k1 + 2*k2 + 2*k3 + k4)
         t = t + dt
         
-        v = w + Lplus@g(t)
+        v = w + L.T@g(t)
         
         Ex = v[0:SBP.N]
         Hz = v[SBP.N:2*SBP.N]
