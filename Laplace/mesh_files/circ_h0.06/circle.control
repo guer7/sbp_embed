@@ -1,0 +1,28 @@
+\begin{MODEL}
+   \begin{OUTER_BOUNDARY}
+      \begin{PARAMETRIC_EQUATION_CURVE}
+         name = outer
+         yEqn = y(t) = 1*sin(2*pi*t)
+         zEqn = z(t) = 0.0
+         xEqn = x(t) = 1*cos(2*pi*t)
+      \end{PARAMETRIC_EQUATION_CURVE}
+   \end{OUTER_BOUNDARY}
+\end{MODEL}
+\begin{CONTROL_INPUT}
+   \begin{SPRING_SMOOTHER}
+      smoothing type = LinearAndCrossbarSpring
+      smoothing = ON
+   \end{SPRING_SMOOTHER}
+   \begin{BACKGROUND_GRID}
+      background grid size = [0.06,0.06,0.0]
+   \end{BACKGROUND_GRID}
+   \begin{RUN_PARAMETERS}
+      mesh file name = circ_h0.06/circle.mesh
+      plot file format = skeleton
+      plot file name = circ_h0.06/circle.tec
+      stats file name = circ_h0.06/circle.txt
+      mesh file format = ISM-V2
+      polynomial order = 15
+   \end{RUN_PARAMETERS}
+\end{CONTROL_INPUT}
+\end{FILE}

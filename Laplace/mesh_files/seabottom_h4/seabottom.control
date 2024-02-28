@@ -1,0 +1,140 @@
+\begin{MODEL}
+   \begin{OUTER_BOUNDARY}
+      \begin{END_POINTS_LINE}
+         name = interface
+         xEnd = [0.0,0.0,0.0]
+         xStart = [100.0,0.0,0.0]
+      \end{END_POINTS_LINE}
+      \begin{END_POINTS_LINE}
+         name = outer
+         xEnd = [0.0,-100.0,0.0]
+         xStart = [0.0,0.0,0.0]
+      \end{END_POINTS_LINE}
+      \begin{END_POINTS_LINE}
+         name = outer
+         xEnd = [100.0,-100.0,0.0]
+         xStart = [0.0,-100.0,0.0]
+      \end{END_POINTS_LINE}
+      \begin{END_POINTS_LINE}
+         name = outer
+         xEnd = [100.0,0.0,0.0]
+         xStart = [100.0,-100.0,0.0]
+      \end{END_POINTS_LINE}
+   \end{OUTER_BOUNDARY}
+   \begin{INNER_BOUNDARIES}
+      \begin{CHAIN}
+         name = inner2
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [35.0,-40.0,0.0]
+               xStart = [45.0,-20.0,0.0]
+            \end{END_POINTS_LINE}
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [55.0,-30.0,0.0]
+               xStart = [35.0,-40.0,0.0]
+            \end{END_POINTS_LINE}
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [45.0,-20.0,0.0]
+               xStart = [55.0,-30.0,0.0]
+            \end{END_POINTS_LINE}
+      \end{CHAIN}
+      \begin{CHAIN}
+         name = inner1
+            \begin{CIRCULAR_ARC}
+               units = degrees
+               name = inner
+               radius = 10.0
+               start angle = 0.0
+               center = [20.0,-25.0,0.0]
+               end angle = 360.0
+            \end{CIRCULAR_ARC}
+      \end{CHAIN}
+      \begin{CHAIN}
+         name = inner3
+            \begin{SPLINE_CURVE}
+               name = inner
+               nKnots = 6
+               \begin{SPLINE_DATA}
+                   0.0 18.0 -50.0 0.0
+                   0.2 13.0 -80.0 0.0
+                   0.4 38.0 -90.0 0.0
+                   0.6 78.0 -85.0 0.0
+                   0.8 68.0 -65.0 0.0
+                   1.0 18.0 -50.0 0.0
+               \end{SPLINE_DATA}
+            \end{SPLINE_CURVE}
+      \end{CHAIN}
+      \begin{CHAIN}
+         name = inner5
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [65.0,-25.0,0.0]
+               xStart = [70.0,-30.0,0.0]
+            \end{END_POINTS_LINE}
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [65.0,-15.0,0.0]
+               xStart = [65.0,-25.0,0.0]
+            \end{END_POINTS_LINE}
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [70.0,-10.0,0.0]
+               xStart = [65.0,-15.0,0.0]
+            \end{END_POINTS_LINE}
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [80.0,-10.0,0.0]
+               xStart = [70.0,-10.0,0.0]
+            \end{END_POINTS_LINE}
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [85.0,-15.0,0.0]
+               xStart = [80.0,-10.0,0.0]
+            \end{END_POINTS_LINE}
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [85.0,-25.0,0.0]
+               xStart = [85.0,-15.0,0.0]
+            \end{END_POINTS_LINE}
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [80.0,-30.0,0.0]
+               xStart = [85.0,-25.0,0.0]
+            \end{END_POINTS_LINE}
+            \begin{END_POINTS_LINE}
+               name = inner
+               xEnd = [70.0,-30.0,0.0]
+               xStart = [80.0,-30.0,0.0]
+            \end{END_POINTS_LINE}
+      \end{CHAIN}
+   \end{INNER_BOUNDARIES}
+\end{MODEL}
+\begin{CONTROL_INPUT}
+   \begin{REFINEMENT_REGIONS}
+      \begin{REFINEMENT_CENTER}
+         name = ref
+         w = 10.0
+         x0 = [45.0,-20.0,0.0]
+         type = sharp
+         h = 3.0
+      \end{REFINEMENT_CENTER}
+   \end{REFINEMENT_REGIONS}
+   \begin{SPRING_SMOOTHER}
+      smoothing type = LinearAndCrossbarSpring
+      smoothing = ON
+   \end{SPRING_SMOOTHER}
+   \begin{BACKGROUND_GRID}
+      background grid size = [4.0,4.0,0.0]
+   \end{BACKGROUND_GRID}
+   \begin{RUN_PARAMETERS}
+      mesh file name = seabottom_h4/seabottom.mesh
+      plot file format = skeleton
+      plot file name = seabottom_h4/seabottom.tec
+      stats file name = seabottom_h4/seabottom.txt
+      mesh file format = ISM-V2
+      polynomial order = 15
+   \end{RUN_PARAMETERS}
+\end{CONTROL_INPUT}
+\end{FILE}
