@@ -121,7 +121,7 @@ if animate
     % find indices to save in subplots
     save_ids = round(tvec_save/dt)+1;
 
-    figure('units','pixels','pos',[315          53         982        1238])
+    figure('units','pixels','pos',[313          21         932        1298])
     
     sp = 1;
     axs{1} = subplot(2,2,1);
@@ -130,7 +130,7 @@ if animate
     
     hold on
     box on
-    fs = 24;
+    fs = 18;
     xl = 0;
     xr = 100;
     yl = -100;
@@ -199,7 +199,7 @@ else
     v = ts.getV();
 end
 
-axs{3}.Position = axs{3}.Position + [0,0.05,0,0];
-axs{4}.Position = axs{4}.Position + [0,0.05,0,0];
+axs{3}.Position = axs{3}.Position + [0,0.04,0,0];
+axs{4}.Position = axs{4}.Position + [0,0.04,0,0];
 % exportgraphics(gcf,'t08.pdf','ContentType','vector')
-% exportgraphics(gca,"t" + num2str(Tend) + ".png",'Resolution',800)
+exportgraphics(gcf,"multiblock.png",'Resolution',800)

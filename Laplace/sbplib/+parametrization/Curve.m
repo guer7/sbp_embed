@@ -48,7 +48,7 @@ classdef Curve
 
             t = linspace(0,1,n);
             p = obj.g(t);
-            h = line(p(1,:),p(2,:),'Color',col,'Linewidth',2);
+            h = line(p(1,:),p(2,:),'Color',col,'Linewidth',4);
         end
 
         function h= plot_normals(obj,l,n,m)
