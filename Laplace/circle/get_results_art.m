@@ -3,7 +3,7 @@
 clear
 close all
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Do simulations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Do simulations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 hvec_GL = [0.5,0.4,0.3,0.2,0.1,0.08,0.06];
 order_vec_GL = [5,7,9];
 op_GL = @sbp.D2GaussLob;
@@ -66,7 +66,7 @@ marker_types = {'*-','x--','d:','+-.'};
 count = 1;
 for j = 1:numel(order_vec_GL)
     plot(dofsvec_GL(:,j),errvec_GL(:,j),marker_types{count},'Color',[27,158,119]/255,'Linewidth',lw,'Markersize',ms)
-    leg{end+1} = "Embedding, order: " + num2str(order_vec_GL(j));
+    leg{end+1} = "SBP GL, order: " + num2str(order_vec_GL(j));
     count = count + 1;
 end
 
@@ -103,7 +103,7 @@ marker_types = {'*-','x--','d:','+-.'};
 count = 1;
 for j = 1:numel(order_vec_GL)
     plot(time_elapsedvec_GL(:,j),errvec_GL(:,j),marker_types{count},'Color',[27,158,119]/255,'Linewidth',lw,'Markersize',ms)
-    leg{end+1} = "Embedding, order: " + num2str(order_vec_GL(j));
+    leg{end+1} = "SBP GL, order: " + num2str(order_vec_GL(j));
     count = count + 1;
 end
 

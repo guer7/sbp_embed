@@ -147,8 +147,8 @@ if animate
 
     caxis(cminmax(sp,:))
     axis([xl,xr,yl,yr,zl,zr])
-    xlabel('$x$','interpreter','latex')
-    ylabel('$y$','interpreter','latex')
+    xlabel('$x$ [m]','interpreter','latex')
+    ylabel('$y$ [m]','interpreter','latex')
     set(gca,'Fontsize',fs)
     colormap(turbo)
     colorbar
@@ -175,8 +175,8 @@ if animate
                 box on
                 caxis(cminmax(sp,:))
                 axis([xl,xr,yl,yr,zl,zr])
-                xlabel('$x$','interpreter','latex')
-                ylabel('$y$','interpreter','latex')
+                xlabel('$x$ [m]','interpreter','latex')
+                ylabel('$y$ [m]','interpreter','latex')
                 set(gca,'Fontsize',fs)
                 colormap(turbo)
                 colorbar
@@ -201,5 +201,5 @@ end
 
 axs{3}.Position = axs{3}.Position + [0,0.04,0,0];
 axs{4}.Position = axs{4}.Position + [0,0.04,0,0];
-% exportgraphics(gcf,'t08.pdf','ContentType','vector')
-exportgraphics(gcf,"multiblock.png",'Resolution',800)
+exportgraphics(gcf,'multiblock.pdf','ContentType','vector')
+exportgraphics(gcf,"multiblock.png",'Resolution',600)

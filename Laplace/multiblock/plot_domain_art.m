@@ -43,8 +43,8 @@ for bidx = 1:dom_bot.nBlocks
     dom_bot.blockMaps{bidx}.plot(2,2);
 end
 axis([0,100,-100,100])
-xlabel('$x$','interpreter','latex')
-ylabel('$y$','interpreter','latex')
+xlabel('$x$ [m]','interpreter','latex')
+ylabel('$y$ [m]','interpreter','latex')
 set(gca,'Fontsize',fs)
 
 exportgraphics(gcf,'multiblock_domain_decomp.pdf','ContentType','vector')
@@ -116,8 +116,8 @@ for bidx = 1:length(dom_water.boundaryGroups.all)
     end
 end
 axis([0,100,-100,100])
-xlabel('$x$','interpreter','latex')
-ylabel('$y$','interpreter','latex')
+xlabel('$x$ [m]','interpreter','latex')
+ylabel('$y$ [m]','interpreter','latex')
 set(gca,'Fontsize',fs)
 
 tb1 = annotation("textbox");
