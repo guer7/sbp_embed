@@ -1,4 +1,4 @@
-This folder contains code to reproduce the numerical results in 'Efficient discretization of the Laplacian on complex geometries'. Code to reproduce the accuracy verification on the unit circle can be found in 'circle' 
+This folder contains code to reproduce the numerical results in 'Efficient discretization of the Laplacian on complex geometries'.
 
 Structure:  
 'circle' - code to reproduce the accuracy verification on the unit circle  
